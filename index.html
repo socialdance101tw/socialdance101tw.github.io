@@ -74,15 +74,26 @@ section{padding:38px 0;scroll-margin-top:56px}
 .panel{border:1px solid var(--line);background:var(--card);border-radius:var(--r);overflow:hidden}
 /* tree */
 .treebox{overflow-x:auto;-webkit-overflow-scrolling:touch}
-#tree{display:block;min-width:760px;width:100%;height:auto}
-#tree .lane{fill:none;stroke:var(--line)}
-#tree .lab{fill:var(--faint);font-size:12px}
-#tree .yr{fill:var(--faint);font-family:var(--mono);font-size:11px}
-#tree .edge{stroke:var(--violet);stroke-width:1.6;fill:none;stroke-dasharray:4 4;opacity:.8}
+.tree2{display:grid;grid-template-columns:96px 1fr;position:relative}
+.tlabels{position:relative;border-right:1px solid var(--line);background:var(--card);z-index:2}
+.tlabels .fl{position:absolute;left:8px;right:6px;transform:translateY(-50%);display:flex;align-items:center;gap:6px;font-size:13px;font-weight:900;line-height:1.25}
+.tlabels .fl i{flex:none;width:10px;height:10px;border-radius:50%}
+.tlabels .ax{position:absolute;left:8px;top:10px;font-family:var(--mono);font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.05em}
+#tree{display:block}
+#tree .band{opacity:.09}
+#tree .tick{stroke:var(--line);stroke-width:1}
+#tree .tick.maj{stroke:var(--muted);stroke-opacity:.45;stroke-width:1.2}
+#tree .yr{fill:var(--muted);font-family:var(--mono);font-size:12px;font-weight:700}
+#tree .yr.maj{fill:var(--ink);font-size:13px}
+#tree .axis{stroke:var(--muted);stroke-width:1.5}
+#tree .rowline{stroke-width:1.5;stroke-opacity:.5}
+#tree .edge{stroke:var(--violet);stroke-width:2;fill:none;stroke-dasharray:5 5}
 #tree .node{cursor:pointer}
-#tree .node circle{stroke-width:2;transition:r .2s}
-#tree .node text{font-size:13px;font-weight:700;fill:var(--ink)}
-#tree .node:hover circle:not(.hit),#tree .node.on circle:not(.hit){r:13}
+#tree .node rect.card{stroke-width:1.6;transition:stroke-width .15s}
+#tree .node .nm{font-size:13px;font-weight:800;fill:var(--ink)}
+#tree .node .ny{font-size:11px;font-family:var(--mono);fill:var(--muted);font-weight:700}
+#tree .node:hover rect.card,#tree .node.on rect.card{stroke-width:3}
+#tree .node.on rect.card{filter:drop-shadow(0 0 6px currentColor)}
 .hint{font-size:12px;color:var(--faint);padding:8px 14px;border-top:1px solid var(--line)}
 .dcard{display:none;padding:16px;border-top:1px solid var(--line)}
 .dcard.show{display:block}
@@ -96,13 +107,17 @@ section{padding:38px 0;scroll-margin-top:56px}
 .mini{display:flex;flex-wrap:wrap;gap:6px}
 .mini button{border:1px solid var(--line);background:transparent;border-radius:10px;padding:6px 10px;font-size:13px;text-align:left}
 /* map */
-#map{display:block;width:100%;min-width:700px;height:auto}
+#map{display:block;width:100%;min-width:620px;height:auto}
+.citychips{display:flex;flex-wrap:wrap;gap:6px;padding:12px 14px 0}
+.citychips button{border:1px solid var(--line);background:var(--card);border-radius:99px;padding:5px 11px;font-size:13px;font-weight:700}
+.citychips button b{color:var(--pink);font-family:var(--mono);margin-left:4px}
+.citychips button.on{border-color:var(--pink);color:var(--pink)}
 #map .land{fill:var(--land);stroke:var(--landLine);stroke-width:.6}
 #map .grid{stroke:var(--line);stroke-width:.5}
 #map .dot{cursor:pointer}
 #map .dot circle.c{fill:var(--pink)}
 #map .dot circle.h{fill:none;stroke:var(--pink);opacity:.5;animation:pulse 2.4s infinite}
-#map .dot text{fill:var(--ink);font-size:11px;font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:3px}
+#map .dot text{fill:var(--ink);font-size:12px;font-weight:700;paint-order:stroke;stroke:var(--bg);stroke-width:3px}
 @keyframes pulse{0%{r:5;opacity:.7}100%{r:16;opacity:0}}
 @media (prefers-reduced-motion:reduce){#map .dot circle.h{animation:none}}
 .mapside{padding:14px;border-top:1px solid var(--line);min-height:84px}
@@ -195,8 +210,8 @@ footer .brand{font-size:22px}
   <section id="tree-s">
     <div class="sh"><h2><small>FAMILY TREE</small>社交舞族譜</h2><p>橫軸是年代，每一排是一個家族。點一支舞，看它的來歷和相關故事；虛線是故事裡講到的承接關係。</p></div>
     <div class="panel">
-      <div class="treebox"><svg id="tree" viewBox="0 0 1000 500" role="img" aria-label="社交舞族譜圖"></svg></div>
-      <div class="hint" id="treehint">手機可以左右滑動看完整張圖。</div>
+      <div class="tree2"><div class="tlabels" id="tlabels"></div><div class="treebox" id="treescroll"><svg id="tree" role="img" aria-label="社交舞族譜圖"></svg></div></div>
+      <div class="hint" id="treehint">橫軸是年代（每格 10 年），手機可以左右滑動。點任何一支舞看它的故事。</div>
       <div class="dcard" id="dcard"></div>
     </div>
   </section>
@@ -204,8 +219,8 @@ footer .brand{font-size:22px}
   <section id="map-s">
     <div class="sh"><h2><small>WORLD MAP</small>世界舞池地圖</h2><p>每個亮點是一個故事發生的地方。點城市，看那裡發生過什麼。</p></div>
     <div class="panel">
-      <div class="treebox"><svg id="map" viewBox="40 60 900 330" role="img" aria-label="故事發生地世界地圖"></svg></div>
-      <div class="mapside" id="mapside"><h3>點地圖上的亮點</h3><div class="m" style="color:var(--muted);font-size:14px">紐約一個城市就有 11 個故事。手機可以左右滑動地圖。</div></div>
+      <div class="treebox" id="mapscroll"><svg id="map" viewBox="130 70 790 320" role="img" aria-label="故事發生地世界地圖"></svg></div>
+      <div class="citychips" id="citychips"></div><div class="mapside" id="mapside"><h3>點城市或地圖上的亮點</h3><div class="m" style="color:var(--muted);font-size:14px">紐約一個城市就有 11 個故事。</div></div>
     </div>
   </section>
 
@@ -262,7 +277,7 @@ const DANCES={
  kizomba:{zh:'Kizomba',en:'KIZOMBA',fam:'afro',x:1980,yl:'1980s',d:'1970 年代末到 80 年代，從放慢的 Semba 裡長出來的貼身雙人舞。'}
 };
 const EDGES=[['marathon','lindy','名字在這裡出現'],['lindy','wcs','加州的直線版本'],['mambo','chacha','起初叫三拍曼波'],['semba','kizomba','從放慢的 Semba 長出'],['tango','nuevo',''],['tango','tangoarg','']];
-const FAM={swing:['搖擺家族','#38e8ff'],ballroom:['交際與國標','#ffd166'],tango:['探戈','#ff4fa8'],latin:['加勒比海拉丁','#9b7bff'],afro:['巴西與非洲','#3ddc97']};
+const FAM={swing:['搖擺家族','#38e8ff'],ballroom:['交際與國標','#ffd166'],tango:['探戈','#ff4fa8'],latin:['加勒比拉丁','#9b7bff'],afro:['巴西與非洲','#3ddc97']};
 // story -> dance node
 const SD={d01:'ballroom',d02:'swing',d03:'salsa',d04:'lindy',d05:'ballroom',d06:'tango',d07:'twist',d08:'lindy',d09:'ballroom',d10:'tango',d11:'marathon',d12:'mambo',d13:'mambo',d14:'social',d15:'lindy',d16:'ballroom',d17:'mambo',d18:'ballroom',d19:'swing',d20:'nuevo',d21:'bigapple',d22:'ballroom',d23:'rueda',d24:'lindy',d25:'polka',d26:'lindy',d27:'ballroom',d28:'tangoarg',d29:'lindy',d30:'rumba',g01:'wcs',g02:'chacha',g03:'merengue',g04:'rumba',g05:'samba',g06:'forro',g07:'charleston',g08:'balboa',g09:'tango',g10:'kizomba'};
 const S=DATA.stories, byId=Object.fromEntries(S.map(s=>[s.id,s]));
@@ -283,17 +298,29 @@ const storiesOf=k=>S.filter(s=>SD[s.id]===k);
  $('#rand').onclick=()=>openStory(S[Math.floor(Math.random()*S.length)].id)})();
 
 /* family tree */
-(function(){const svg=$('#tree');const rows=['swing','ballroom','tango','latin','afro'];const rowY={swing:85,ballroom:180,tango:270,latin:360,afro:450};
- const K=[[1830,130],[1900,230],[1920,290],[1940,520],[1960,720],[2000,965]];
- const xp=y=>{y=Math.min(Math.max(y,1830),2000);for(let i=1;i<K.length;i++){if(y<=K[i][0]){const [a,ax]=K[i-1],[b,bx]=K[i];return ax+(y-a)/(b-a)*(bx-ax)}}return 965};
- [1850,1900,1920,1930,1940,1950,1960,1980,2000].forEach(y=>{el('line',{x1:xp(y),x2:xp(y),y1:30,y2:490,class:'lane'},svg);el('text',{x:xp(y),y:22,class:'yr','text-anchor':'middle'},svg).textContent=y});
- rows.forEach(r=>{el('text',{x:10,y:rowY[r]+4,class:'lab'},svg).textContent=FAM[r][0];el('line',{x1:118,x2:975,y1:rowY[r],y2:rowY[r],class:'lane'},svg)});
- const pos={},up={};rows.forEach(r=>{Object.keys(DANCES).filter(k=>DANCES[k].fam===r).sort((a,b)=>DANCES[a].x-DANCES[b].x).forEach((k,i)=>{pos[k]=[xp(DANCES[k].x),rowY[r]];up[k]=i%2===0})});
- EDGES.forEach(([a,b])=>{const [x1,y1]=pos[a],[x2,y2]=pos[b];const mx=(x1+x2)/2;const d=y1===y2?`M${x1},${y1} Q${mx},${y1+Math.min(70,(x2-x1)*.25)} ${x2},${y2}`:`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;el('path',{d,class:'edge'},svg)});
- Object.entries(DANCES).forEach(([k,d])=>{const [x,y]=pos[k];const g=el('g',{class:'node',tabindex:0,role:'button','aria-label':d.zh,'data-k':k},svg);
-  el('circle',{cx:x,cy:y,r:20,fill:'transparent',class:'hit'},g);el('circle',{cx:x,cy:y,r:9,fill:'var(--bg)',stroke:FAM[d.fam][1]},g);el('circle',{cx:x,cy:y,r:3.5,fill:FAM[d.fam][1]},g);
-  const t=el('text',{x:x,y:up[k]?y-16:y+27,'text-anchor':'middle'},g);t.textContent=d.en.replace(' · ',' ');
+(function(){const svg=$('#tree');const rows=['swing','ballroom','tango','latin','afro'];
+ const Y0=1830,Y1=2000,PX=6.2,L=40,TOP=46,RH=96,H=TOP+RH*rows.length+18,W=L+(Y1-Y0)*PX+30;
+ svg.setAttribute('width',W);svg.setAttribute('height',H);svg.setAttribute('viewBox',`0 0 ${W} ${H}`);
+ const xp=y=>L+(Math.min(Math.max(y,Y0),Y1)-Y0)*PX;const rowY={};rows.forEach((r,i)=>rowY[r]=TOP+RH*i+RH/2);
+ rows.forEach((r,i)=>{el('rect',{x:0,y:TOP+RH*i+4,width:W,height:RH-8,rx:12,fill:FAM[r][1],class:'band'},svg);el('line',{x1:L,x2:W-10,y1:rowY[r],y2:rowY[r],stroke:FAM[r][1],class:'rowline'},svg)});
+ for(let y=Y0;y<=Y1;y+=10){const maj=y%50===0;el('line',{x1:xp(y),x2:xp(y),y1:TOP-4,y2:H-14,class:'tick'+(maj?' maj':'')},svg);el('text',{x:xp(y),y:TOP-14,class:'yr'+(maj?' maj':''),'text-anchor':'middle'},svg).textContent=y}
+ el('line',{x1:L,x2:W-10,y1:TOP-4,y2:TOP-4,class:'axis'},svg);
+ const lab=$('#tlabels');lab.style.height=H+'px';lab.innerHTML='<div class="ax">年代 →</div>'+rows.map(r=>`<div class="fl" style="top:${rowY[r]}px"><i style="background:${FAM[r][1]}"></i>${FAM[r][0]}</div>`).join('');
+ // lay out cards with two lanes per row, no overlap
+ const pos={},card={};
+ rows.forEach(r=>{const ks=Object.keys(DANCES).filter(k=>DANCES[k].fam===r).sort((a,b)=>DANCES[a].x-DANCES[b].x);const end=[-1e9,-1e9];
+  ks.forEach(k=>{const d=DANCES[k];const name=d.en.replace(' · ',' ');const w=Math.max(name.length*8.6,(d.yl||'').length*7)+20;const x=xp(d.x);
+   let lane=0,cx=x-w/2;if(cx<end[0]+8){if(cx>=end[1]+8)lane=1;else{lane=end[0]<=end[1]?0:1;cx=end[lane]+8}}
+   end[lane]=cx+w;pos[k]=[x,rowY[r]];card[k]={x:cx,w,y:rowY[r]+(lane?8:-46),name,lane}})});
+ EDGES.forEach(([a,b])=>{const [x1,y1]=pos[a],[x2,y2]=pos[b];const mx=(x1+x2)/2;const d=y1===y2?`M${x1},${y1} Q${mx},${y1+30} ${x2},${y2}`:`M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}`;el('path',{d,class:'edge'},svg)});
+ Object.entries(DANCES).forEach(([k,d])=>{const [x,y]=pos[k];const c=card[k];const col=FAM[d.fam][1];const g=el('g',{class:'node',tabindex:0,role:'button','aria-label':d.zh,'data-k':k,style:'color:'+col},svg);
+  el('line',{x1:x,x2:Math.min(Math.max(x,c.x+8),c.x+c.w-8),y1:y,y2:c.lane?c.y:c.y+38,stroke:col,'stroke-width':1.5},g);
+  el('circle',{cx:x,cy:y,r:5.5,fill:col,stroke:'var(--bg)','stroke-width':2},g);
+  el('rect',{x:c.x,y:c.y,width:c.w,height:38,rx:10,fill:'var(--bg)',stroke:col,class:'card'},g);
+  el('text',{x:c.x+c.w/2,y:c.y+17,'text-anchor':'middle',class:'nm'},g).textContent=c.name;
+  el('text',{x:c.x+c.w/2,y:c.y+31,'text-anchor':'middle',class:'ny'},g).textContent=d.yl||'—';
   const pick=()=>showDance(k);g.addEventListener('click',pick);g.addEventListener('keydown',e=>{if(e.key==='Enter')pick()})});
+ const sc=$('#treescroll');if(sc.clientWidth<W)sc.scrollLeft=xp(1905);
  })();
 function showDance(k){const d=DANCES[k];document.querySelectorAll('#tree .node').forEach(n=>n.classList.toggle('on',n.dataset.k===k));
  const st=storiesOf(k);const kids=EDGES.filter(e=>e[0]===k).map(e=>DANCES[e[1]].zh),pars=EDGES.filter(e=>e[1]===k).map(e=>DANCES[e[0]].zh);
@@ -302,6 +329,7 @@ function showDance(k){const d=DANCES[k];document.querySelectorAll('#tree .node')
  c.querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openStory(b.dataset.s))}
 
 /* map */
+const CITYPICK={};
 (function(){const svg=$('#map');const P=(lat,lon)=>[500+lon*1000/360,260-lat*1000/360];
  for(let lon=-180;lon<=180;lon+=30){const [x]=P(0,lon);el('line',{x1:x,x2:x,y1:30,y2:430,class:'grid'},svg)}
  for(let lat=-60;lat<=90;lat+=30){const [,y]=P(lat,0);el('line',{x1:0,x2:1000,y1:y,y2:y,class:'grid'},svg)}
@@ -311,8 +339,11 @@ function showDance(k){const d=DANCES[k];document.querySelectorAll('#tree .node')
   const g=el('g',{class:'dot',tabindex:0,role:'button','aria-label':name},svg);const r=Math.min(3+list.length*.7,9);
   el('circle',{cx:x,cy:y,r:5,class:'h'},g);el('circle',{cx:x,cy:y,r:r,class:'c'},g);
   if(list.length>1||['TPE','SHA','HAV','BUE','LAD','RIO','STO','TYO'].includes(c)){const t=el('text',{x:x+r+3,y:y+4},g);t.textContent=name+(list.length>1?' '+list.length:'')}
-  const pick=()=>{$('#mapside').innerHTML=`<h3>${esc(name)}・${list.length} 個故事</h3><div class="mini">${list.slice().sort((a,b)=>(a.year||9999)-(b.year||9999)).map(s=>`<button data-s="${s.id}">▶ ${s.yl?esc(s.yl)+'｜':''}${esc(s.title)}</button>`).join('')}</div>`;$('#mapside').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openStory(b.dataset.s))};
-  g.addEventListener('click',pick);g.addEventListener('keydown',e=>{if(e.key==='Enter')pick()})})})();
+  const pick=CITYPICK[c]=()=>{document.querySelectorAll('#citychips button').forEach(b=>b.classList.toggle('on',b.dataset.c===c));$('#mapside').innerHTML=`<h3>${esc(name)}・${list.length} 個故事</h3><div class="mini">${list.slice().sort((a,b)=>(a.year||9999)-(b.year||9999)).map(s=>`<button data-s="${s.id}">▶ ${s.yl?esc(s.yl)+'｜':''}${esc(s.title)}</button>`).join('')}</div>`;$('#mapside').querySelectorAll('[data-s]').forEach(b=>b.onclick=()=>openStory(b.dataset.s))};
+  g.addEventListener('click',pick);g.addEventListener('keydown',e=>{if(e.key==='Enter')pick()})});
+ $('#citychips').innerHTML=Object.entries(grp).sort((a,b)=>b[1].length-a[1].length).map(([c,l])=>`<button data-c="${c}">${esc(DATA.cities[c][2])}<b>${l.length}</b></button>`).join('');
+ $('#citychips').querySelectorAll('button').forEach(b=>b.onclick=()=>CITYPICK[b.dataset.c]());
+ const ms=$('#mapscroll');if(ms.clientWidth<ms.scrollWidth)ms.scrollLeft=0})();
 
 /* timeline */
 let curFam='all';
